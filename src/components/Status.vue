@@ -12,16 +12,27 @@ export default{
     },
     methods: {
         async update(){
-            this.status = (await (await fetch(`http://${this.ip}/services/${this.service}`)).json()).status;
+            try{
+                const stat_data = await (await fetch(`http://${this.ip}/services/${this.service}`)).json();
+                let status = stat_data.status;
+                stat_data.output.forEach(line => {
+                    if(line.message.includes('Succeeded')){
+                        status = 'Succeeded';
+                    }
+                });
+                this.status = status;
+            }catch{
+                this.status = 'na';
+            }
         }
     },
     computed: {
         backgroundColor(){
             return {
-                'na': 'white',
-                'Stopped': 'grey',
-                'Running': 'yellow',
-                'succeeded': 'green'
+                'na': '#EEE',
+                'Stopped': '#723D46',
+                'Running': '#FFE1A8',
+                'Succeeded': '#C9CBA3'
             }[this.status];
         }
     }
@@ -29,7 +40,13 @@ export default{
 </script>
 
 <template>
-    <td :style='[ style, { backgroundColor } ]'>
+    <td :style='[ { backgroundColor } ]' class='padded'>
         <span>{{service.split('.')[0]}}: {{status}}</span>
     </td>
 </template>
+
+<style>
+    .padded{
+        padding: 3px 6px;
+    }
+</style>

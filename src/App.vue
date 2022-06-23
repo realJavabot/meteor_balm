@@ -34,7 +34,7 @@ export default{
   <OCInput @ocChange='oc_change'/>
   <ui-tabs v-model='active'>
     <ui-tab>Inventory</ui-tab>
-    <ui-tab>Status</ui-tab>
+    <ui-tab>Services</ui-tab>
   </ui-tabs>
   <ui-panels v-model='active'>
     <ui-panel>

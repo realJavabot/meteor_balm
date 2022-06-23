@@ -9,6 +9,11 @@
                 info: []
             }
         },
+        watch: {
+            async ocnum(newval, oldval){
+                this.info = await( await fetch('http://10.0.7.170/order/'+newval) ).json();
+            }
+        },
         async created(){
             this.info = await( await fetch('http://10.0.7.170/order/'+this.ocnum) ).json();
         },
@@ -34,7 +39,7 @@
                     });
                     return Object.keys(devices)
                         .map(dev => `${devices[dev]} ${dev}`)
-                        .join(',');
+                        .join(' ');
                 };
                 for(let sysID in this.info){
                     let sys = this.info[sysID];
@@ -46,14 +51,26 @@
                         'Memory'        : sys['Memory']['Amount'],
                         'CPU'           : sys['CPU']['Processors'][0]['Model'],
                         'Disk'          : get_unique(sys, 'model'),
-                        'BIOS'          : sys['System']['BIOS'],
-                        'IPMI'          : sys['BMC']['firmware'],
-                        'Disk Frimware' : get_unique(sys, 'firmware'),
-                        'MAC_1'         : sys['Network'][0]['mac'].toUpperCase(),
-                        'MAC_2'         : sys['Network'][1]['mac'].toUpperCase(),
-                        'BMC_MAC'       : sys['BMC']['mac'].toUpperCase(),
-                        'BMC_IP'        : sys['BMC']['ip']
+                        'BIOS'          : sys['System']['BIOS']
                     }
+                    
+                    if(sys['BMC']){
+                        template['IPMI'] = sys['BMC']['firmware'];
+                    }
+                    
+                    template['Disk Firmware'] = get_unique(sys, 'firmware');
+
+                    let count = 0;
+                    sys['Network'].forEach(dev=>{
+                        count++;
+                        template[`MAC_${count}`] = dev.mac.toUpperCase();
+                    });
+                    
+                    if(sys['BMC']){
+                        template['BMC_MAC'] = sys['BMC']['mac'].toUpperCase();
+                        template['BMC_IP']  = sys['BMC']['ip'];
+                    }
+
                     inv.push(template);
                 }
                 return inv;

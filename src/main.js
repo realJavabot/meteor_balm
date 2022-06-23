@@ -6,6 +6,6 @@ import BalmUIPlus from 'balm-ui-plus';
 import 'balm-ui-css';
 
 createApp(App)
-    .use(BalmUI, {UiTextfield: {}, UiTable: {}, UiTabs: {}, UiSelect: {}, UiButton: {raised: true}})
+    .use(BalmUI, {UiTextfield: {}, UiTable: {}, UiTabs: {}, UiSelect: {}, UiButton: {raised: true}, UiTooltip: {}, UiList: {}})
     .use(BalmUIPlus)
     .mount('#app');
