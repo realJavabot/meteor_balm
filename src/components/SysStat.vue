@@ -19,10 +19,16 @@ export default{
     methods: {
          async attempt(){
             try{
-                this.services = await( await fetch(`http://${this.info.ip}/services`) ).json();
+                if(!this.info.ip){throw Error('no ip');}
+                let res = await fetch(`http://${this.info.ip}/services`).catch(e=>{return;});
+                if(!res){
+                    throw Error('bad request');
+                }
+                this.services = await res.json();
                 this.$emit('add_services', this.services);
                 this.confirmed = true;
             }catch(e){
+                console.log(`ip ${this.info.ip} failed`);
                 this.message = `${this.info.SN} unavailable atm`;
                 setTimeout(() => {
                     this.attempt();

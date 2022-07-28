@@ -7,7 +7,7 @@
         data(){
             return {
                 info: [{}],
-                systems: [{}],
+                systems: [{errors: []}],
                 selected_rows: [],
                 services: [],
                 sel_service: '',
@@ -47,28 +47,28 @@
         methods:{
             async update_errors(){
                 this.systems.forEach(async sys=>{
-                    try{
-                        let error_ob = (await( await fetch(`http://${sys.ip}/errors`) ).json())['events'];
-                        sys.errors = [...error_ob["OS"], ...error_ob["BMC"]].filter(er=>er.length>2);
-                    }catch{
-
-                    }
+                    let res = await fetch(`http://${sys.ip}/errors`).catch(e=>{});
+                    if(!res){return;}
+                    let error_ob = (await res.json()).events;
+                    sys.errors = [...error_ob["OS"], ...error_ob["BMC"]].filter(er=>er.length>2);
                 });
             },
             async update(){
-                this.info = await( await fetch('http://10.0.7.170/order/'+this.ocnum) ).json();
+                try{
+                    this.info = await( await fetch('http://10.0.7.170/order/'+this.ocnum) ).json();
 
-                const sysArray = [];
-                for(let sys of this.info){
-                    sysArray.push(
-                        {
-                            SN: sys["serial"],
-                            ip: sys["OS IP"],
-                            errors: []
-                        }
-                    );
-                }
-                this.systems = sysArray;
+                    const sysArray = [];
+                    for(let sys of this.info){
+                        sysArray.push(
+                            {
+                                SN: sys["serial"],
+                                ip: sys["OS IP"],
+                                errors: []
+                            }
+                        );
+                    }
+                    this.systems = sysArray;
+                }catch{}
             },
             sys_event(){
                 this.selected_rows.forEach(i=>{

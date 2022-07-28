@@ -1,12 +1,13 @@
 <script>
 import Table from './components/Table.vue';
 import Stat from './components/Stat.vue';
+import Tip from './components/Tip.vue';
 import OCInput from './components/OCInput.vue';
 import Empty from './components/Empty.vue';
 import Invalid from './components/Invalid.vue';
 
 export default{
-  components: {Table, Stat, Empty, Invalid, OCInput},
+  components: {Table, Stat, Empty, Tip, Invalid, OCInput},
   data(){
     return {
       oc_num: '',
@@ -35,6 +36,7 @@ export default{
   <ui-tabs v-model='active'>
     <ui-tab>Inventory</ui-tab>
     <ui-tab>Services</ui-tab>
+    <ui-tab>Tip</ui-tab>
   </ui-tabs>
   <ui-panels v-model='active'>
     <ui-panel>
@@ -46,6 +48,9 @@ export default{
       <Stat v-if='valid' :ocnum='oc_num'/>
       <Empty v-else-if='oc_num == ""'/>
       <Invalid v-else/>
+    </ui-panel>
+    <ui-panel>
+      <Tip :ocnum='oc_num'/>
     </ui-panel>
   </ui-panels>
 </template>

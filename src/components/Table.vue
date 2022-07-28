@@ -31,11 +31,14 @@
                 let inv = [];
                 const get_unique = (info, key) => {
                     const devices = {};
-                    info.Storage.forEach(devs=>{
-                        if(!devices[devs[key]]){
-                            devices[devs[key]] = 0;
-                        }
-                        devices[devs[key]]++;
+                    Object.keys(info.Storage).forEach(i=>{
+                        if(!Array.isArray(info.Storage[i])){return;}
+                        info.Storage[i].forEach(devs=>{
+                            if(!devices[devs[key]]){
+                                devices[devs[key]] = 0;
+                            }
+                            devices[devs[key]]++;
+                        });
                     });
                     return Object.keys(devices)
                         .map(dev => `${devices[dev]} ${dev}`)
