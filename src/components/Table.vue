@@ -6,7 +6,9 @@
         props: ['ocnum'],
         data(){
             return {
-                info: []
+                info: [],
+                page: 1,
+                total: 12
             }
         },
         watch: {
@@ -29,21 +31,43 @@
             inventory(){
                 if(this.info.length == 0){return [];}
                 let inv = [];
+
                 const get_unique = (info, key) => {
                     const devices = {};
-                    Object.keys(info.Storage).forEach(i=>{
-                        if(!Array.isArray(info.Storage[i])){return;}
-                        info.Storage[i].forEach(devs=>{
+                    
+                    if(info.Storage.Onboard){
+                        info.Storage.Onboard.forEach(devs=>{
                             if(!devices[devs[key]]){
                                 devices[devs[key]] = 0;
                             }
                             devices[devs[key]]++;
                         });
-                    });
+                    }
+
+                    if(key == "firmware"){
+                        key = "Firmware";
+                    }
+                    if(key == "model"){
+                        key = "Model";
+                    }
+                    
+                    if(info.Storage.Offboard){
+                        info.Storage.Offboard.info["Physical Drives"].Drives.forEach(devs=>{
+                            if(devs.State == "JBOD"){
+                                return;
+                            }
+                            if(!devices[devs[key]]){
+                                devices[devs[key]] = 0;
+                            }
+                            devices[devs[key]]++;
+                        });
+                    }
+
                     return Object.keys(devices)
                         .map(dev => `${devices[dev]} ${dev}`)
                         .join(' ');
                 };
+
                 for(let sysID in this.info){
                     let sys = this.info[sysID];
                     let template = {
@@ -62,6 +86,10 @@
                     }
                     
                     template['Disk Firmware'] = get_unique(sys, 'firmware');
+
+                    if(sys.Storage.Offboard){
+                        template['RAID Firmware'] = sys.Storage.Offboard.info.Controller.Firmware;
+                    }
 
                     let count = 0;
                     sys['Network'].forEach(dev=>{
@@ -122,6 +150,12 @@
         :data = "inventory"
         :thead = "table_headers"
         :tbody = "headers">
+        <ui-pagination
+            v-model="page"
+            :total="total"
+            show-total
+            @change="onPage"
+        ></ui-pagination>
     </ui-table>
     <ui-button class='downloadButton' @click='download'>download</ui-button>
 </template>

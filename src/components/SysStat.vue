@@ -30,6 +30,9 @@ export default{
             }catch(e){
                 console.log(`ip ${this.info.ip} failed`);
                 this.message = `${this.info.SN} unavailable atm`;
+                if(this.info.ip == undefined){
+                    return;
+                }
                 setTimeout(() => {
                     this.attempt();
                 }, 3000);

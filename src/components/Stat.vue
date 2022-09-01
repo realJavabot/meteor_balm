@@ -1,5 +1,6 @@
 <script>
     import SysStat from './SysStat.vue';
+    import { useEvent } from 'balm-ui';
 
     export default{
         components: {SysStat},
@@ -15,20 +16,22 @@
                 state_list: [
                         {label: "Start", value: "start"}, 
                         {label:"Stop", value: "stop"}
-                    ]
+                    ],
+                balmUI: useEvent(),
+                files: []
             }
         },
         watch: {
             async ocnum(newval, oldval){
                 this.update();
+            },
+            files(newval, oldval){
+                console.log(newval);
             }
         },
         async created(){
             this.update();
             this.update_errors();
-            setInterval(() => {
-                this.update_errors();
-            }, 3000);
         },
         computed:{
             headers(){
@@ -45,13 +48,20 @@
             }
         },
         methods:{
-            async update_errors(){
-                this.systems.forEach(async sys=>{
-                    let res = await fetch(`http://${sys.ip}/errors`).catch(e=>{});
+            update_errors(cur_index = 0){
+                let filter_arr = ["/", "PWR-0020", "PWR-0000", "LAN-0005", "LAN-0006", "PWR-0003", "SEC-0000", "chassis intrusion", "HEST: Enabling Firmware", "Invalid Username", "OEM, First AC Power on", "Node Product Key"];
+                let filter_func = err => typeof(err) == "string" && err.length > 2 && !filter_arr.some(v=>err.includes(v));
+                let sys = this.systems[cur_index];
+                fetch(`http://${sys.ip}/errors`, {mode: 'cors'}).then(res => {
                     if(!res){return;}
-                    let error_ob = (await res.json()).events;
-                    sys.errors = [...error_ob["OS"], ...error_ob["BMC"]].filter(er=>er.length>2);
+                    return res.json();
+                }).then(error => {
+                    let error_ob = error.events;
+                    error_ob["BMC"] = error_ob["BMC"].filter(filter_func);
+                    error_ob["OS"] = error_ob["OS"].filter(filter_func);
+                    sys.errors = [...error_ob["OS"], ...error_ob["BMC"]];
                 });
+                setTimeout(()=>{ this.update_errors((cur_index + 1) % this.systems.length); }, 500);
             },
             async update(){
                 try{
@@ -114,9 +124,18 @@
             </ui-collapse>
         </template>
     </ui-table>
-    <ui-select class='actionSelect' :options='service_list' v-model='sel_service'/>
-    <ui-select class='actionSelect' :options='state_list' v-model='sel_state'/>
-    <ui-button @click='sys_event' :disabled='sel_service == ""'>Apply</ui-button>
+    <div>
+        <ui-select class='actionSelect' :options='service_list' v-model='sel_service'/>
+        <ui-select class='actionSelect' :options='state_list' v-model='sel_state'/>
+        <ui-button @click='sys_event' :disabled='sel_service == ""'>Apply</ui-button>
+    </div>
+    <div>
+        <ui-file 
+            accept="image/*" 
+            multiple
+            @change="balmUI.onChange('files', $event)"
+        ></ui-file>
+    </div>
 </template>
 
 <style>

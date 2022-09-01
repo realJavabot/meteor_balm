@@ -11,9 +11,10 @@ export default{
         setInterval(this.update, 3000);
     },
     methods: {
-        async update(){
-            try{
-                const stat_data = await (await fetch(`http://${this.ip}/services/${this.service}`)).json();
+        update(){
+            fetch(`http://${this.ip}/services/${this.service}`).then(data=>{
+                return data.json();
+            }).then(stat_data=>{
                 let status = stat_data.status;
                 stat_data.output.forEach(line => {
                     if(line.message.includes('Succeeded')){
@@ -21,9 +22,7 @@ export default{
                     }
                 });
                 this.status = status;
-            }catch{
-                this.status = 'na';
-            }
+            }).catch(()=>{ this.status = 'na'; });
         }
     },
     computed: {

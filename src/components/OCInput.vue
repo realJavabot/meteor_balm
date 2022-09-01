@@ -28,7 +28,7 @@
         align-items: center;
         margin: 30px 0 50px 0;
     }
-    .ocSearch .mdc-text-field{
-        margin-right: 50px;
+    .ocSearch :first-child{
+        margin-right: 25px;
     }
 </style>
