@@ -1,14 +1,15 @@
 <script>
     import SysStat from './SysStat.vue';
+    import Error from './Error.vue';
     import { useEvent } from 'balm-ui';
 
     export default{
-        components: {SysStat},
+        components: {SysStat, Error},
         props: ['ocnum'],
         data(){
             return {
                 info: [{}],
-                systems: [{errors: []}],
+                systems: [{}],
                 selected_rows: [],
                 services: [],
                 sel_service: '',
@@ -18,11 +19,17 @@
                         {label:"Stop", value: "stop"}
                     ],
                 balmUI: useEvent(),
-                files: []
+                files: [],
+                page: 1,
+                total: 1,
+                filePopup: false
             }
         },
         watch: {
             async ocnum(newval, oldval){
+                this.update();
+            },
+            async page(newval, oldval){
                 this.update();
             },
             files(newval, oldval){
@@ -31,7 +38,6 @@
         },
         async created(){
             this.update();
-            this.update_errors();
         },
         computed:{
             headers(){
@@ -48,36 +54,25 @@
             }
         },
         methods:{
-            update_errors(cur_index = 0){
-                let filter_arr = ["/", "PWR-0020", "PWR-0000", "LAN-0005", "LAN-0006", "PWR-0003", "SEC-0000", "chassis intrusion", "HEST: Enabling Firmware", "Invalid Username", "OEM, First AC Power on", "Node Product Key"];
-                let filter_func = err => typeof(err) == "string" && err.length > 2 && !filter_arr.some(v=>err.includes(v));
-                let sys = this.systems[cur_index];
-                fetch(`http://${sys.ip}/errors`, {mode: 'cors'}).then(res => {
-                    if(!res){return;}
-                    return res.json();
-                }).then(error => {
-                    let error_ob = error.events;
-                    error_ob["BMC"] = error_ob["BMC"].filter(filter_func);
-                    error_ob["OS"] = error_ob["OS"].filter(filter_func);
-                    sys.errors = [...error_ob["OS"], ...error_ob["BMC"]];
-                });
-                setTimeout(()=>{ this.update_errors((cur_index + 1) % this.systems.length); }, 500);
-            },
             async update(){
                 try{
                     this.info = await( await fetch('http://10.0.7.170/order/'+this.ocnum) ).json();
 
                     const sysArray = [];
-                    for(let sys of this.info){
+                    for(let sysID in this.info){
+                        if(sysID < (this.page-1)*10 || sysID >= (this.page)*10){
+                            continue;
+                        }
+                        let sys = this.info[sysID];
                         sysArray.push(
                             {
                                 SN: sys["serial"],
-                                ip: sys["OS IP"],
-                                errors: []
+                                ip: sys["OS IP"]
                             }
                         );
                     }
                     this.systems = sysArray;
+                    this.total = this.info.length;
                 }catch{}
             },
             sys_event(){
@@ -110,32 +105,40 @@
             <SysStat :info='data' :key='data.ip' @add_services='add_services'/>
         </template>
         <template #errors='{data}'>
-            <ui-collapse v-show='data.errors.length > 0'>
-                <template #toggle>
-                    <ui-icon class='error'>
-                        error
-                    </ui-icon>
-                </template>
-                <ui-list :key='data.ip'>
-                    <ui-item v-for='err in data.errors' :key='err'>
-                        {{err}}
-                    </ui-item>
-                </ui-list>
-            </ui-collapse>
+            <Error :key='data.ip' :info='data'></Error>
         </template>
+        <ui-pagination
+            v-model="page"
+            :total="total"
+            show-total
+            @change="onPage"
+            position="center"
+        ></ui-pagination>
     </ui-table>
     <div>
         <ui-select class='actionSelect' :options='service_list' v-model='sel_service'/>
         <ui-select class='actionSelect' :options='state_list' v-model='sel_state'/>
         <ui-button @click='sys_event' :disabled='sel_service == ""'>Apply</ui-button>
     </div>
-    <div>
-        <ui-file 
-            accept="image/*" 
-            multiple
-            @change="balmUI.onChange('files', $event)"
-        ></ui-file>
-    </div>
+    <ui-button @click="filePopup = true">Upload Service</ui-button>
+    <ui-dialog v-model="filePopup" @confirm="onConfirm">
+        <ui-dialog-title>Service Files Upload</ui-dialog-title>
+        <ui-dialog-content>
+            <form class="fileUpload">
+                <label for="service">Service File (.service): </label>
+                <ui-file 
+                    @change="balmUI.onChange('files', $event)"
+                    name="service"
+                ></ui-file>
+                <label for="script">Service Script (.sh): </label>
+                <ui-file 
+                    @change="balmUI.onChange('files', $event)"
+                    name="script"
+                ></ui-file>
+            </form>
+        </ui-dialog-content>
+        <ui-dialog-actions></ui-dialog-actions>
+    </ui-dialog>
 </template>
 
 <style>
@@ -145,7 +148,11 @@
 .actionSelect{
     margin:20px;
 }
-.error{
-    color: #b00020;
+.fileUpload{
+    display: flex;
+    flex-direction: column;
+}
+.fileUpload label{
+    margin-top:20px;
 }
 </style>

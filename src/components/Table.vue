@@ -8,7 +8,7 @@
             return {
                 info: [],
                 page: 1,
-                total: 12
+                total: 1
             }
         },
         watch: {
@@ -68,8 +68,15 @@
                         .join(' ');
                 };
 
+                this.total = this.info.length;
+
                 for(let sysID in this.info){
+                    if(sysID < (this.page-1)*10 || sysID >= (this.page)*10){
+                        continue;
+                    }
+
                     let sys = this.info[sysID];
+
                     let template = {
                         'Serial'        : sys['serial'],
                         'Model'         : sys['System']['Motherboard Model'],
@@ -154,7 +161,7 @@
             v-model="page"
             :total="total"
             show-total
-            @change="onPage"
+            position="center"
         ></ui-pagination>
     </ui-table>
     <ui-button class='downloadButton' @click='download'>download</ui-button>
