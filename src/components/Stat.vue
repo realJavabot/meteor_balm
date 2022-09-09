@@ -19,7 +19,7 @@
                         {label:"Stop", value: "stop"}
                     ],
                 balmUI: useEvent(),
-                files: [],
+                files: {service:"", script:""},
                 page: 1,
                 total: 1,
                 filePopup: false
@@ -31,9 +31,6 @@
             },
             async page(newval, oldval){
                 this.update();
-            },
-            files(newval, oldval){
-                console.log(newval);
             }
         },
         async created(){
@@ -88,6 +85,27 @@
                         this.services.push(service);
                     }
                 });
+            },
+            changed_serv(file){
+                this.files.service = file[0].sourceFile;
+            },
+            changed_script(file){
+                this.files.script = file[0].sourceFile;
+            },
+            onConfirm(yes) {
+                if(yes){
+                    const formData = new FormData();
+                    formData.append('files', this.files.service);
+                    formData.append('files', this.files.script);
+                    const options = {
+                        method: 'POST', 
+                        body: formData
+                    };
+                    this.selected_rows.forEach(i=>{
+                       fetch(`http://${this.systems[i].ip}/upload/services`, options);
+                    });
+                }
+                this.files = {service:"", script:""};
             }
         }
     }
@@ -111,7 +129,6 @@
             v-model="page"
             :total="total"
             show-total
-            @change="onPage"
             position="center"
         ></ui-pagination>
     </ui-table>
@@ -124,20 +141,22 @@
     <ui-dialog v-model="filePopup" @confirm="onConfirm">
         <ui-dialog-title>Service Files Upload</ui-dialog-title>
         <ui-dialog-content>
-            <form class="fileUpload">
-                <label for="service">Service File (.service): </label>
+            <div id="fileUpload">
+                <label for="service">Service File ({{files.service.name}}): </label>
                 <ui-file 
-                    @change="balmUI.onChange('files', $event)"
+                    @change="changed_serv"
                     name="service"
+                    accept="text/x-dbus-service"
                 ></ui-file>
-                <label for="script">Service Script (.sh): </label>
+                <label for="script">Service Script ({{files.script.name}}): </label>
                 <ui-file 
-                    @change="balmUI.onChange('files', $event)"
+                    @change="changed_script"
                     name="script"
+                    accept="application/x-shellscript"
                 ></ui-file>
-            </form>
+            </div>
         </ui-dialog-content>
-        <ui-dialog-actions></ui-dialog-actions>
+        <ui-dialog-actions acceptText="Upload" cancelText="Cancel"></ui-dialog-actions>
     </ui-dialog>
 </template>
 
@@ -148,11 +167,11 @@
 .actionSelect{
     margin:20px;
 }
-.fileUpload{
+#fileUpload{
     display: flex;
     flex-direction: column;
 }
-.fileUpload label{
-    margin-top:20px;
+#fileUpload label{
+    margin:10px 0 10px 0;
 }
 </style>

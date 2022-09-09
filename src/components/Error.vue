@@ -4,7 +4,7 @@ export default{
     data(){
         return {
             errors: [],
-            filter_arr: ["| 2", "Base OS Boot", "SYS-0062", "SYS-0063", "PWR-0020", "PWR-0000", "LAN-0005", "LAN-0006", "PWR-0003", "SEC-0000", "chassis intrusion", "HEST: Enabling Firmware", "Invalid Username", "OEM, First AC Power on", "Node Product Key"]
+            filter_arr: ["| 2", "ACPI Error", "Base OS Boot", "SYS-0062", "SYS-0063", "PWR-0020", "PWR-0000", "LAN-0005", "LAN-0006", "PWR-0003", "SEC-0000", "chassis intrusion", "HEST: Enabling Firmware", "Invalid Username", "OEM, First AC Power on", "Node Product Key"]
         }
     },
     async created(){

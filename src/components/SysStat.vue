@@ -33,10 +33,10 @@ export default{
                 if(this.info.ip == undefined){
                     return;
                 }
-                setTimeout(() => {
-                    this.attempt();
-                }, 3000);
             }
+            setTimeout(() => {
+                this.attempt();
+            }, 3000);
          }
     }
 }
