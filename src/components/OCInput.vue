@@ -8,6 +8,7 @@
      methods: {
          process(){
             this.$emit('ocChange', this.oc_num);
+            document.title = this.oc_num;
          }
      }
  }

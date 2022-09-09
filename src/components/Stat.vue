@@ -22,7 +22,8 @@
                 files: {service:"", script:""},
                 page: 1,
                 total: 1,
-                filePopup: false
+                filePopup: false,
+                controller: new AbortController()
             }
         },
         watch: {
@@ -30,7 +31,9 @@
                 this.update();
             },
             async page(newval, oldval){
+                this.controller.abort();
                 this.update();
+                this.controller = new AbortController();
             }
         },
         async created(){
@@ -120,7 +123,7 @@
         :tbody = "table_body"
         row-checkbox>
         <template #service_ind='{data}'>
-            <SysStat :info='data' :key='data.ip' @add_services='add_services'/>
+            <SysStat :info='data' :key='data.ip' @add_services='add_services' :controller='controller'/>
         </template>
         <template #errors='{data}'>
             <Error :key='data.ip' :info='data'></Error>

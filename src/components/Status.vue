@@ -1,6 +1,6 @@
 <script>
 export default{
-    props: ['ip', 'service', 'style'],
+    props: ['ip', 'service', 'style', 'controller'],
     data(){
         return {
             status: 'na'
@@ -8,11 +8,12 @@ export default{
     },
     async created(){
         this.update();
-        setInterval(this.update, 3000);
+        setInterval(this.update, 1000);
     },
     methods: {
         update(){
-            fetch(`http://${this.ip}/services/${this.service}`).then(data=>{
+            const { signal } = this.controller;
+            fetch(`http://${this.ip}/services/${this.service}`, { signal }).then(data=>{
                 return data.json();
             }).then(stat_data=>{
                 let status = stat_data.status;
