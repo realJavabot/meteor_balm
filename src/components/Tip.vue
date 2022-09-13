@@ -30,7 +30,7 @@ export default{
         async update(){
             this.loading = true;
             this.valid = true;
-            this.session_id = await (await fetch(`http://${this.ip}:8000/sess/michael/ixl101mio9`, {mode: 'cors'})).text();
+            this.session_id = await (await fetch(`http://${this.ip}:8000/sess/${document.cookie}`, {mode: 'cors'})).text();
             fetch(`http://${this.ip}:8000/${this.session_id}/${this.ocnum}`, {mode: 'cors'})
                 .then(response=>{
                     if (response.ok) {
@@ -84,7 +84,7 @@ export default{
                     const sys = this.info['marked_table'].body[i];
                     fetch(`http://${this.ip}:8000/start/${this.session_id}/${this.ocnum}/${sys["#"]}`, {mode: 'cors'});
                     sys["Testing Started"] = 'just now';
-                    sys["Test By"].body[i][4] = 'michael';
+                    sys["Test By"].body[i][4] = this.active_username;
                 }catch{}
             });
         },
