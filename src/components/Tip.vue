@@ -105,6 +105,9 @@ export default{
         attemptAuth(creds, show_err){
             this.checking_auth = true;
             fetch(`http://${this.ip}:8000/sess/${creds}`, {mode: 'cors'}).then(()=>{
+                if (!response.ok) {
+                    throw new Error("failed auth");
+                }
                 this.authenticated = true;
                 this.checking_auth = false;
                 document.cookie = creds;
