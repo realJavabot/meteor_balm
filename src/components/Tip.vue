@@ -203,8 +203,8 @@ export default{
             <ui-dialog-title>TIP Login</ui-dialog-title>
             <ui-dialog-content>
                 <div id="login">
-                    <ui-textfield label="Username" v-model="username_inp"/>
-                    <ui-textfield label="Password" v-model="password_inp" input-type="password"/>
+                    <ui-textfield label="Username" v-model="username_inp" maxlength="40"/>
+                    <ui-textfield label="Password" v-model="password_inp" maxlength="40" input-type="password"/>
                 </div>
             </ui-dialog-content>
             <ui-dialog-actions acceptText="Login" cancelText="Cancel"></ui-dialog-actions>
