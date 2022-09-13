@@ -7,8 +7,19 @@ export default{
             info: '',
             selected_rows: [],
             valid: false,
-            loading: false
+            loading: false,
+            authenticated: false,
+            login: false,
+            active_username: '',
+            username_inp: '',
+            password_inp: '',
+            ip: 'localhost',
+            checking_auth: false,
+            login_message: ''
         }
+    },
+    created(){
+        this.attemptAuth(document.cookie, false);
     },
     watch: {
         async ocnum(newval, oldval){
@@ -19,8 +30,8 @@ export default{
         async update(){
             this.loading = true;
             this.valid = true;
-            this.session_id = await (await fetch(`http://192.168.86.39:8000/sess/michael/ixl101mio9`, {mode: 'cors'})).text();
-            fetch(`http://192.168.86.39:8000/${this.session_id}/${this.ocnum}`, {mode: 'cors'})
+            this.session_id = await (await fetch(`http://${this.ip}:8000/sess/michael/ixl101mio9`, {mode: 'cors'})).text();
+            fetch(`http://${this.ip}:8000/${this.session_id}/${this.ocnum}`, {mode: 'cors'})
                 .then(response=>{
                     if (response.ok) {
                         return response.json();
@@ -71,7 +82,7 @@ export default{
             this.selected_rows.forEach(i=>{
                 try{
                     const sys = this.info['marked_table'].body[i];
-                    fetch(`http://192.168.86.39:8000/start/${this.session_id}/${this.ocnum}/${sys["#"]}`, {mode: 'cors'});
+                    fetch(`http://${this.ip}:8000/start/${this.session_id}/${this.ocnum}/${sys["#"]}`, {mode: 'cors'});
                     sys["Testing Started"] = 'just now';
                     sys["Test By"].body[i][4] = 'michael';
                 }catch{}
@@ -81,19 +92,35 @@ export default{
             this.selected_rows.forEach(i=>{
                 try{
                     const sys = this.info['marked_table'].body[i];
-                    fetch(`http://192.168.86.39:8000/end/${this.session_id}/${this.ocnum}/${sys["#"]}`, {mode: 'cors'});
-                    sys["Testing Done"] = 'just now';
+                    fetch(`http://${this.ip}:8000/end/${this.session_id}/${this.ocnum}/${sys['#']}`, {mode: 'cors'});
+                    sys['Testing Done'] = 'just now';
                 }catch{}
             });
+        },
+        onConfirm(confirmed){
+            if(!confirmed){return;}
+            let creds = `${this.username_inp}/${this.password_inp}`;
+            this.attemptAuth(creds, true);
+        },
+        attemptAuth(creds, show_err){
+            this.checking_auth = true;
+            fetch(`http://${this.ip}:8000/sess/${creds}`, {mode: 'cors'}).then(()=>{
+                this.authenticated = true;
+                this.checking_auth = false;
+                document.cookie = creds;
+                this.active_username = creds.split('/')[0];
+            }).catch(e=>{
+                this.checking_auth = false;
+                this.login_message = (show_err)? 'Failed authentication, please try again' : '';
+            });
         }
-    },
-    async created(){
-        this.update();
     }
 }
 </script>
 
 <template>
+    <div v-if="authenticated">
+    <p>logged in as {{active_username}}</p>
     <div v-if="valid">
     <div v-if="loading">
         <center><ui-spinner active></ui-spinner></center>
@@ -123,7 +150,6 @@ export default{
                 </ui-list>
             </div>
         </div>
-        <!-- <span>Customer: {{info.customer[0]}}</span> -->
         <ui-table
             fullwidth
             row-checkbox
@@ -160,9 +186,26 @@ export default{
         </div>
     </div>
     </div>
-    <h1 v-else>
-        OC Not in TIPS
-    </h1>
+    <div v-else>
+        <h1>OC Not in TIPS</h1>
+    </div>
+    </div>
+    <div v-else>
+        <h1>Please login first</h1>
+        <ui-button @click="login = true">Login</ui-button>
+        <ui-dialog v-model="login" @confirm="onConfirm">
+            <ui-dialog-title>TIP Login</ui-dialog-title>
+            <ui-dialog-content>
+                <div id="login">
+                    <ui-textfield label="Username" v-model="username_inp"/>
+                    <ui-textfield label="Password" v-model="password_inp" input-type="password"/>
+                </div>
+            </ui-dialog-content>
+            <ui-dialog-actions acceptText="Login" cancelText="Cancel"></ui-dialog-actions>
+        </ui-dialog>
+        <p>{{login_message}}</p>
+        <center><ui-spinner active v-if="checking_auth"></ui-spinner></center>
+    </div>
 </template>
 
 <style>
@@ -195,10 +238,14 @@ export default{
     .sales{
         padding: 10px;
     }
-    .qcTables{
-        
-    }
+    
     .qcTables div{
         width:100%;
+    }
+
+    #login{
+        display: flex;
+        flex-direction: column;
+        gap:10px;
     }
 </style>

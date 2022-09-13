@@ -5,10 +5,18 @@
              oc_num: ''
          }
      },
+     created(){
+        let oc = this.$storage.getStorageSync('oc');
+        if(oc){
+            this.oc_num = oc;
+            this.process();
+        }
+     },
      methods: {
          process(){
             this.$emit('ocChange', this.oc_num);
             document.title = this.oc_num;
+            this.$storage.setStorageSync('oc', this.oc_num);
          }
      }
  }
