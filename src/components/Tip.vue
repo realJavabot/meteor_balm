@@ -112,6 +112,9 @@ export default{
                 this.checking_auth = false;
                 document.cookie = creds;
                 this.active_username = creds.split('/')[0];
+                if(this.ocnum != ''){
+                    this.update();
+                }
             }).catch(e=>{
                 this.checking_auth = false;
                 this.login_message = (show_err)? 'Failed authentication, please try again' : '';
