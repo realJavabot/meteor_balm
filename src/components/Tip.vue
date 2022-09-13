@@ -11,15 +11,16 @@ export default{
             authenticated: false,
             login: false,
             active_username: '',
+            active_password: '',
             username_inp: '',
             password_inp: '',
-            ip: 'localhost',
+            ip: location.hostname,
             checking_auth: false,
-            login_message: ''
+            login_message: '',
         }
     },
     created(){
-        this.attemptAuth(document.cookie, false);
+        this.attemptAuth(...document.cookie.split('/'), false);
     },
     watch: {
         async ocnum(newval, oldval){
@@ -27,10 +28,13 @@ export default{
         }
     },
     methods: {
+        encode(username, pass){
+            return `${encodeURIComponent(username)}/${encodeURIComponent(pass)}`;
+        },
         async update(){
             this.loading = true;
             this.valid = true;
-            this.session_id = await (await fetch(`http://${this.ip}:8000/sess/${document.cookie}`, {mode: 'cors'})).text();
+            this.session_id = await (await fetch(`http://${this.ip}:8000/sess/${this.encode(this.active_username, this.active_password)}`, {mode: 'cors'})).text();
             fetch(`http://${this.ip}:8000/${this.session_id}/${this.ocnum}`, {mode: 'cors'})
                 .then(response=>{
                     if (response.ok) {
@@ -99,19 +103,19 @@ export default{
         },
         onConfirm(confirmed){
             if(!confirmed){return;}
-            let creds = `${this.username_inp}/${this.password_inp}`;
-            this.attemptAuth(creds, true);
+            this.attemptAuth(this.username_inp, this.password_inp, true);
         },
-        attemptAuth(creds, show_err){
+        attemptAuth(username, password, show_err){
             this.checking_auth = true;
-            fetch(`http://${this.ip}:8000/sess/${creds}`, {mode: 'cors'}).then(response=>{
+            fetch(`http://${this.ip}:8000/sess/${this.encode(username, password)}`, {mode: 'cors'}).then(response=>{
                 if (!response.ok) {
                     throw new Error("failed auth");
                 }
                 this.authenticated = true;
                 this.checking_auth = false;
-                document.cookie = creds;
-                this.active_username = creds.split('/')[0];
+                document.cookie = `${username}/${password}`;
+                this.active_username = username;
+                this.active_password = password;
                 if(this.ocnum != ''){
                     this.update();
                 }
