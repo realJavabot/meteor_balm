@@ -1,6 +1,7 @@
 <script>
     import SysStat from './SysStat.vue';
     import Error from './Error.vue';
+    import search from './search.mjs';
     import { useEvent } from 'balm-ui';
 
     export default{
@@ -56,7 +57,7 @@
         methods:{
             async update(){
                 try{
-                    this.info = await( await fetch('http://10.0.7.170/order/'+this.ocnum) ).json();
+                    this.info = await search(this.ocnum);
 
                     const sysArray = [];
                     for(let sysID in this.info){

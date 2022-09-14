@@ -4,6 +4,7 @@ import Stat from './components/Stat.vue';
 import Tip from './components/Tip.vue';
 import OCInput from './components/OCInput.vue';
 import Empty from './components/Empty.vue';
+import Search from './components/search.mjs';
 import Invalid from './components/Invalid.vue';
 
 export default{
@@ -20,7 +21,7 @@ export default{
       let valid = true;
       this.oc_num = new_oc;
 
-      if(await (await fetch('http://10.0.7.170/order/'+new_oc)).status != 200){
+      if(!await Search(new_oc)){
         valid = false;
       }
 

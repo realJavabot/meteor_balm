@@ -1,5 +1,6 @@
 <script>
     import System from './System.vue';
+    import search from './search.mjs';
 
     export default{
         components: {System},
@@ -13,11 +14,13 @@
         },
         watch: {
             async ocnum(newval, oldval){
-                this.info = await( await fetch('http://10.0.7.170/order/'+newval) ).json();
+                this.info = await search(newval);
+                console.log(this.info);
             }
         },
         async created(){
-            this.info = await( await fetch('http://10.0.7.170/order/'+this.ocnum) ).json();
+            this.info = await search(this.ocnum);
+            console.log(this.info);
         },
         computed:{
             tdStyle(){
@@ -161,7 +164,7 @@
             v-model="page"
             :total="total"
             show-total
-            position="center"
+                position="center"
         ></ui-pagination>
     </ui-table>
     <ui-button class='downloadButton' @click='download'>download</ui-button>
