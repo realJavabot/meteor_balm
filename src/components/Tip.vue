@@ -1,4 +1,5 @@
 <script>
+import {getOCFromSN} from './search.mjs';
 export default{
     props: ['ocnum'],
     data(){
@@ -17,13 +18,24 @@ export default{
             ip: location.hostname,
             checking_auth: false,
             login_message: '',
+            _ocnum: ''
         }
     },
-    created(){
+    async created(){
+        if(this.ocnum.length == 8){
+            this._ocnum = this.ocnum;
+        }else{
+            this._ocnum = await getOCFromSN(this.ocnum);
+        }
         this.attemptAuth(...document.cookie.split('/'), false);
     },
     watch: {
         async ocnum(newval, oldval){
+            if(this.ocnum.length == 8){
+                this._ocnum = this.ocnum;
+            }else{
+                this._ocnum = await getOCFromSN(this.ocnum);
+            }
             this.update();
         }
     },
@@ -35,7 +47,7 @@ export default{
             this.loading = true;
             this.valid = true;
             this.session_id = await (await fetch(`http://${this.ip}:8000/sess/${this.encode(this.active_username, this.active_password)}`, {mode: 'cors'})).text();
-            fetch(`http://${this.ip}:8000/${this.session_id}/${this.ocnum}`, {mode: 'cors'})
+            fetch(`http://${this.ip}:8000/${this.session_id}/${this._ocnum}`, {mode: 'cors'})
                 .then(response=>{
                     if (response.ok) {
                         return response.json();
@@ -86,7 +98,7 @@ export default{
             this.selected_rows.forEach(i=>{
                 try{
                     const sys = this.info['marked_table'].body[i];
-                    fetch(`http://${this.ip}:8000/start/${this.session_id}/${this.ocnum}/${sys["#"]}`, {mode: 'cors'});
+                    fetch(`http://${this.ip}:8000/start/${this.session_id}/${this._ocnum}/${sys["#"]}`, {mode: 'cors'});
                     sys["Testing Started"] = 'just now';
                     sys["Test By"].body[i][4] = this.active_username;
                 }catch{}
@@ -96,7 +108,7 @@ export default{
             this.selected_rows.forEach(i=>{
                 try{
                     const sys = this.info['marked_table'].body[i];
-                    fetch(`http://${this.ip}:8000/end/${this.session_id}/${this.ocnum}/${sys['#']}`, {mode: 'cors'});
+                    fetch(`http://${this.ip}:8000/end/${this.session_id}/${this._ocnum}/${sys['#']}`, {mode: 'cors'});
                     sys['Testing Done'] = 'just now';
                 }catch{}
             });

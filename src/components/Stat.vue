@@ -1,7 +1,7 @@
 <script>
     import SysStat from './SysStat.vue';
     import Error from './Error.vue';
-    import search from './search.mjs';
+    import { search } from './search.mjs';
     import { useEvent } from 'balm-ui';
 
     export default{

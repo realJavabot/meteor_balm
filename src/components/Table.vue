@@ -1,6 +1,6 @@
 <script>
     import System from './System.vue';
-    import search from './search.mjs';
+    import { search } from './search.mjs';
 
     export default{
         components: {System},
@@ -20,7 +20,6 @@
         },
         async created(){
             this.info = await search(this.ocnum);
-            console.log(this.info);
         },
         computed:{
             tdStyle(){
