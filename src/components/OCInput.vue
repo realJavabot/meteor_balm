@@ -24,7 +24,7 @@
  <template>
     <div class='ocSearch'>
         <ui-textfield v-model='oc_num' @keyup.enter='process' maxlength='9'>
-            OC Number
+            OC Number / Serial Number
         </ui-textfield>
         <ui-button @click='process'>Search</ui-button>
     </div>
