@@ -23,7 +23,7 @@
  </script>
  <template>
     <div class='ocSearch'>
-        <ui-textfield v-model='oc_num' @keyup.enter='process' maxlength='8'>
+        <ui-textfield v-model='oc_num' @keyup.enter='process' maxlength='9'>
             OC Number
         </ui-textfield>
         <ui-button @click='process'>Search</ui-button>
