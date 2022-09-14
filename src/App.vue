@@ -4,7 +4,7 @@ import Stat from './components/Stat.vue';
 import Tip from './components/Tip.vue';
 import OCInput from './components/OCInput.vue';
 import Empty from './components/Empty.vue';
-import Search from './components/search.mjs';
+import { search } from './components/search.mjs';
 import Invalid from './components/Invalid.vue';
 
 export default{
@@ -21,7 +21,8 @@ export default{
       let valid = true;
       this.oc_num = new_oc;
 
-      if(!await Search(new_oc)){
+      let srch = await search(new_oc);
+      if(!Array.isArray(srch)){
         valid = false;
       }
 
